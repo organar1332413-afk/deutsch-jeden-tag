@@ -52,8 +52,17 @@ jobs:
             exit 1
           fi
 
-          echo "Using ZIP: $ZIP_FILE"
-          unzip -q "$ZIP_FILE" -d extracted
+          echo "Using project archive: $ZIP_FILE"
+          if unzip -t "$ZIP_FILE" >/dev/null 2>&1; then
+            echo "Archive is a normal ZIP"
+            PROJECT_ZIP="$ZIP_FILE"
+          else
+            echo "Archive is base64 text; decoding before unzip"
+            base64 -d "$ZIP_FILE" > project.zip
+            PROJECT_ZIP="project.zip"
+          fi
+
+          unzip -q "$PROJECT_ZIP" -d extracted
 
           PROJECT_DIR=$(find extracted -name settings.gradle -type f -printf '%h\n' | head -n 1)
           if [ -z "$PROJECT_DIR" ]; then
